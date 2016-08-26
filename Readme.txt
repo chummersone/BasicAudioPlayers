@@ -38,6 +38,8 @@ The problem with the above example is that the audio file is read inside the cal
 
 A better approach is to put such blocking operations in a separate thread. In this example, reading the audio file and writing to the ring buffer is performed by the main() thread (which is possible because main() is not blocked by the callback).
 
+This example is based on the paex_record_file.c PortAudio example (http://www.portaudio.com/docs/v19-doxydocs/paex__record__file_8c_source.html).
+
 4) BasicAudioPlayerCallbackThreaded
 
 This example is similar to 3), except that a separate POSIX thread is created to read the audio file.
