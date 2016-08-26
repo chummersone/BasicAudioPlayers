@@ -44,4 +44,4 @@ This example is similar to 3), except that a separate POSIX thread is created to
 
 In 3) there is no way to prime the ring buffer before starting the audio stream, because bufferAudioFile() is blocking (and hence must be called AFTER the stream is started - otherwise the ring buffer will never be emptied and the stream will never be started). In this example, the audio-file-reading thread can be started BEFORE starting the audio stream, because it doesn't automatically block main(), and we can block only until the ring buffer is full before starting the audio stream.
 
-This example is based on the paex_record_file.c PortAudio example (http://www.portaudio.com/docs/v19-doxydocs/paex__record__file_8c_source.html).
+Examples 3) and 4) are based on the paex_record_file.c PortAudio example (http://www.portaudio.com/docs/v19-doxydocs/paex__record__file_8c_source.html).
