@@ -12,17 +12,17 @@ There are four projects.
 
 1) BasicAudioPlayerBlocking
 
-This uses PortAudio's blocking interface (via Pa_WriteStream) to write data to the audio stream (output buffer). This technique is "blocking" in the sense that data are pushed onto the output stream, and the program blocks (waits) whilst that process is happening.
+This uses PortAudio's blocking interface (via Pa_WriteStream()) to write data to the audio stream (output buffer). This technique is "blocking" in the sense that data are pushed onto the output stream, and the program blocks (waits) whilst that process is happening.
 
 The blocking method is the simpler of the methods, but is not necessarily the most compatible.
 
 2) BasicAudioPlayerCallback
 
-This uses PortAudio's callback interface (notice the callback argument in the Pa_OpenStream function call). This technique gives the responsibility of filling the output buffer to the host API - the API consumes data to fill the buffer. This is often performed in a separate thread, and that thread is often given a high priority (whereas as we have little control over priority using the blocking interface, making it less reliable).
+This uses PortAudio's callback interface (notice the callback argument in the Pa_OpenStream() function call). This technique gives the responsibility of filling the output buffer to the host API - the API consumes data to fill the buffer. This is often performed in a separate thread, and that thread is often given a high priority (whereas as we have little control over priority using the blocking interface, making it less reliable).
 
 The "callback" means that we are giving PortAudio a pointer to a function to call-back when audio data are required. In PortAudio, this function has a type: PaStreamCallback.
 
-Importantly, the callback does not "block". (This is a good thing, because it means that our program can do other things whilst audio is consumed and processed). However, it also means that this basic program could terminate before any audio is played, because there is nothing blocking this from happening. The while()/Pa_Sleep calls actively block the program until the file is finished being replayed.
+Importantly, the callback does not "block". (This is a good thing, because it means that our program can do other things whilst audio is consumed and processed). However, it also means that this basic program could terminate before any audio is played, because there is nothing blocking this from happening. The while()/Pa_Sleep() calls actively block the program until the file is finished being replayed.
 
 The callback method is more complex than the blocking method, but it is also generally more compatible and more reliable.
 
@@ -35,8 +35,6 @@ The problem with the above example is that the audio file is read inside the cal
  * context switching (such as exec() or yield()),
  * mutex operations, or
  * anything else that might rely on the OS.
-
-See the Audio Programming web page for a link to further discussion about this.
 
 A better approach is to put such blocking operations in a separate thread. In this example, reading the audio file and writing to the ring buffer is performed by the main() thread (which is possible because main() is not blocked by the callback).
 
