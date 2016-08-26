@@ -32,7 +32,7 @@
 
 /* Begin PBXFileReference section */
 		97630C151D6CBBB100796C84 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = Source/main.c; sourceTree = SOURCE_ROOT; };
-		97A4B74B1D51E6FD00429332 /* BasicAudioPlayerCallbackMainBuffer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BasicAudioPlayerCallbackMainBuffer; sourceTree = BUILT_PRODUCTS_DIR; };
+		97A4B74B1D51E6FD00429332 /* BasicAudioPlayer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BasicAudioPlayer; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A4B7551D51E73900429332 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		97A4B7571D51E74300429332 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		97A4B7591D51E74B00429332 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
@@ -89,7 +89,7 @@
 		97A4B74C1D51E6FD00429332 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				97A4B74B1D51E6FD00429332 /* BasicAudioPlayerCallbackMainBuffer */,
+				97A4B74B1D51E6FD00429332 /* BasicAudioPlayer */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,7 +130,7 @@
 			);
 			name = BasicAudioPlayerCallbackMainBuffer;
 			productName = BasicAudioPlayer;
-			productReference = 97A4B74B1D51E6FD00429332 /* BasicAudioPlayerCallbackMainBuffer */;
+			productReference = 97A4B74B1D51E6FD00429332 /* BasicAudioPlayer */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -269,14 +269,14 @@
 		97A4B7531D51E6FD00429332 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = BasicAudioPlayerCallbackMainBuffer;
+				PRODUCT_NAME = BasicAudioPlayer;
 			};
 			name = Debug;
 		};
 		97A4B7541D51E6FD00429332 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = BasicAudioPlayerCallbackMainBuffer;
+				PRODUCT_NAME = BasicAudioPlayer;
 			};
 			name = Release;
 		};

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream;                       // Audio stream info
+    PaStream *stream = NULL;                // Audio stream info
     PaError err = 0;                        // Portaudio error number
     struct audioFileInfo audioFile;         // Pass info about the audio file
     
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     if (err != 0) goto cleanup;
     
     // Set up output device, get max output channels
-    getStreamParameters(&outputParameters, "output", &maxChannels);
+    getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
     // Open audio file
@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
 cleanup:
     // make sure all the toys are put away befor exit
     
-    if (stream) // close stream
-        err = Pa_CloseStream(stream);
+    if (stream)
+        err = Pa_CloseStream(stream); // close stream
     
     // terminate portaudio
     Pa_Terminate();

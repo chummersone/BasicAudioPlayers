@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream;                       // Audio stream info
+    PaStream *stream = NULL;                // Audio stream info
     PaError err = 0;                        // Portaudio error number
     struct threadData pData = {0};          // Pass info about the audio file
     unsigned int numSamples;                // Number of samples in ring buffer
@@ -51,6 +51,10 @@ int main(int argc, char *argv[])
     // intial values of audio file pointers
     pData.audioFile.buffer = NULL;
     pData.audioFile.fileID = NULL;
+    
+    // initial values of thread data
+    pData.threadSyncFlag = 1;
+    pData.ringBufferData = NULL;
     
     // program needs 1 argument: audio file name
     if (argc != 2)
@@ -68,7 +72,7 @@ int main(int argc, char *argv[])
     if (err != 0) goto cleanup;
     
     // Set up output device, get max output channels
-    getStreamParameters(&outputParameters, "output", &maxChannels);
+    getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
     // Open audio file
@@ -206,7 +210,6 @@ PaError startThread(struct threadData* pData, ThreadFunctionType fn)
     const struct sched_param param = {.sched_priority =  sched_get_priority_max(SCHED_FIFO)};
     pthread_setschedparam(pData->threadHandle, SCHED_FIFO, &param);
     
-    pData->threadSyncFlag = 1;
     // Wait for thread to fill buffer before allowing execution to continue
     while (pData->threadSyncFlag)
         Pa_Sleep(10);

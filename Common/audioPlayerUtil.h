@@ -21,6 +21,12 @@
     __typeof__ (b) _b = (b); \
     _a < _b ? _a : _b; })
 
+// Type to identify input and output devices
+typedef enum {
+    INPUT_DEVICE,
+    OUTPUT_DEVICE
+} PaIOdevice;
+
 // make enumerated constants for different errors
 enum ERR_MSGS {
     NO_ERROR,
@@ -38,6 +44,9 @@ struct audioFileInfo {
     float*      buffer;     // pointer to a buffer for storing audio data
 };
 
+// Return a name for an input or output device
+const char* getDeviceIOname(PaIOdevice ioDevice);
+
 // This function opens an audio file
 int openAudioFile(const char fileName[],
                     struct audioFileInfo *audioFile,
@@ -47,6 +56,6 @@ int openAudioFile(const char fileName[],
 void closeAudioFile(struct audioFileInfo *audioFile);
 
 // Set up audio device
-void getStreamParameters(PaStreamParameters *p, const char* ioName, unsigned int *maxChannels);
+void getStreamParameters(PaStreamParameters *p, PaIOdevice ioDevice, unsigned int *maxChannels);
 
 #endif /* audioPlayerUtil_h */

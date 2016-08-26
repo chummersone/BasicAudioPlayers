@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream;                       // Audio stream info
+    PaStream *stream = NULL;                // Audio stream info
     PaError err = 0;                        // Portaudio error number
     struct audioFileInfo audioFile;         // Pass info about the audio file
     sf_count_t numberFramesRead;            // Number of frames read from audio file
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     if (err != 0) goto cleanup;
     
     // Set up output device, get max output channels
-    getStreamParameters(&outputParameters, "output", &maxChannels);
+    getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
     // Open audio file
