@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
     // set output channels based on file
     outputParameters.channelCount = pData.audioFile.channels;
     
+    // allocate ring buffer memory
     numSamples = nextPowerOf2((unsigned)(pData.audioFile.sRate * 0.5 * pData.audioFile.channels));
     pData.ringBufferData = (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
     
