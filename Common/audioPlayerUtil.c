@@ -68,7 +68,7 @@ void closeAudioFile(struct audioFileInfo *audioFile)
 }
 
 // Set up output device
-void getStreamParameters(PaStreamParameters *p, PaIOdevice ioDevice, unsigned int *maxChannels)
+void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsigned int *maxChannels)
 {
     // initial declarations
     PaDeviceIndex id;
