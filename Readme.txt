@@ -38,10 +38,10 @@ The problem with the above example is that the audio file is read inside the cal
 
 A better approach is to put such blocking operations in a separate thread. In this example, reading the audio file and writing to the ring buffer is performed by the main() thread (which is possible because main() is not blocked by the callback).
 
-This example is based on the paex_record_file.c PortAudio example (http://www.portaudio.com/docs/v19-doxydocs/paex__record__file_8c_source.html).
-
 4) BasicAudioPlayerCallbackThreaded
 
 This example is similar to 3), except that a separate POSIX thread is created to read the audio file.
 
 In 3) there is no way to prime the ring buffer before starting the audio stream, because bufferAudioFile() is blocking (and hence must be called AFTER the stream is started - otherwise the ring buffer will never be emptied and the stream will never be started). In this example, the audio-file-reading thread can be started BEFORE starting the audio stream, because it doesn't automatically block main(), and we can block only until the ring buffer is full before starting the audio stream.
+
+This example is based on the paex_record_file.c PortAudio example (http://www.portaudio.com/docs/v19-doxydocs/paex__record__file_8c_source.html).
