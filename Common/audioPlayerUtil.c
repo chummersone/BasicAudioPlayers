@@ -9,10 +9,9 @@
 #include "audioPlayerUtil.h"
 
 // Return a name for an input or output device
-const char* getDeviceIOname(PaIOdevice ioDevice)
-{
-    switch (ioDevice)
-    {
+const char* getDeviceIOname(PaIOdevice ioDevice) {
+    
+    switch (ioDevice) {
         case INPUT_DEVICE:
             return "input";
         case OUTPUT_DEVICE:
@@ -23,10 +22,9 @@ const char* getDeviceIOname(PaIOdevice ioDevice)
 }
 
 // This function opens an audio file
-int openAudioFile(const char fileName[],
-                    struct audioFileInfo *audioFile,
-                    int maxChannels)
-{
+int openAudioFile(const char fileName[], struct audioFileInfo *audioFile,
+                  int maxChannels) {
+    
     SF_INFO sfinfo; // audio file info returned by sndfile
     
     // Open audio file
@@ -37,8 +35,7 @@ int openAudioFile(const char fileName[],
     audioFile->sRate = sfinfo.samplerate;
     
     // Error checking
-    if (audioFile->fileID == NULL)
-    {
+    if (audioFile->fileID == NULL) {
         // file not opened
         printf("An error occurred opening audio file\n");
         return ERROR_OPENING_FILE;
@@ -48,16 +45,15 @@ int openAudioFile(const char fileName[],
         printf("The specified audio file has %d audio channels. The chosen device only supports up to %d channels.\n",audioFile->channels,maxChannels);
         return INVALID_CHANNELS;
     }
-    else
-    {
+    else {
         // everything was OK
         return NO_ERROR;
     }
 }
 
 // This function closes an audio file
-void closeAudioFile(struct audioFileInfo *audioFile)
-{
+void closeAudioFile(struct audioFileInfo *audioFile) {
+    
     // close audio file
     if (audioFile->fileID != NULL)
         sf_close(audioFile->fileID);
@@ -68,8 +64,8 @@ void closeAudioFile(struct audioFileInfo *audioFile)
 }
 
 // Set up output device
-void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsigned int *maxChannels)
-{
+void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsigned int *maxChannels) {
+    
     // initial declarations
     PaDeviceIndex id;
     const PaDeviceInfo *info;

@@ -11,8 +11,7 @@
 #include "audioPlayerUtil.h"
 
 // MAIN
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
@@ -26,8 +25,7 @@ int main(int argc, char *argv[])
     audioFile.fileID = NULL;
     
     // program needs 1 argument: audio file name
-    if (argc != 2)
-    {
+    if (argc != 2) {
         // handle this error
         printf("Error: Bad command line. Syntax is:\n\n");
         printf("%s filename\n",argv[0]);
@@ -55,8 +53,7 @@ int main(int argc, char *argv[])
     // Depends on number of channels in audio file,
     // so cannot be done until now
     audioFile.buffer = malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
-    if (audioFile.buffer==NULL)
-    {
+    if (audioFile.buffer==NULL) {
         // check memory was allocated
         err = NO_MEMORY;
         printf("Insufficient memory to play audio file.\n" );
@@ -64,14 +61,8 @@ int main(int argc, char *argv[])
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream,
-                        NULL, /* no input */
-                        &outputParameters,
-                        audioFile.sRate,
-                        FRAMES_PER_BUFFER,
-                        paClipOff,
-                        NULL,
-                        &audioFile);
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, audioFile.sRate,
+                        FRAMES_PER_BUFFER, paClipOff, NULL, &audioFile);
     if (err != 0) goto cleanup;
     
     // start playing
@@ -79,8 +70,7 @@ int main(int argc, char *argv[])
     if (err != 0) goto cleanup;
     
     // this is the blocking interface
-    do
-    {   // read from file and write to buffer
+    do { // read from file and write to buffer
         numberFramesRead = sf_readf_float(audioFile.fileID, audioFile.buffer, FRAMES_PER_BUFFER);
         // write buffer to stream
         err = Pa_WriteStream(stream, audioFile.buffer, numberFramesRead);
@@ -105,8 +95,7 @@ cleanup:
     closeAudioFile(&audioFile);
     
     // all portaudio error codes are negative
-    if (err<0)
-    {
+    if (err<0) {
         printf("An error occured while using the portaudio stream\n" );
         printf("Error number: %d\n", err);
         printf("Error message: %s\n", Pa_GetErrorText(err));

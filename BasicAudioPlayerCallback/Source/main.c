@@ -14,8 +14,7 @@
 PaStreamCallback playCallback;
 
 // MAIN
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
@@ -28,8 +27,7 @@ int main(int argc, char *argv[])
     audioFile.fileID = NULL;
     
     // program needs 1 argument: audio file name
-    if (argc != 2)
-    {
+    if (argc != 2) {
         // handle this error
         printf("Error: Bad command line. Syntax is:\n\n");
         printf("%s filename\n",argv[0]);
@@ -57,8 +55,7 @@ int main(int argc, char *argv[])
     // Depends on number of channels in audio file,
     // so cannot be done until now
     audioFile.buffer = malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
-    if (audioFile.buffer==NULL)
-    {
+    if (audioFile.buffer==NULL) {
         // check memory was allocated
         err = NO_MEMORY;
         printf("Insufficient memory to play audio file.\n" );
@@ -66,14 +63,8 @@ int main(int argc, char *argv[])
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream,
-                        NULL, /* no input */
-                        &outputParameters,
-                        audioFile.sRate,
-                        FRAMES_PER_BUFFER,
-                        paClipOff,
-                        playCallback, // specify callback function here
-                        &audioFile);
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, audioFile.sRate,
+                        FRAMES_PER_BUFFER, paClipOff, playCallback, &audioFile);
     if (err != 0) goto cleanup;
     
     // start playing
@@ -103,8 +94,7 @@ cleanup:
     closeAudioFile(&audioFile);
     
     // all portaudio error codes are negative
-    if (err<0)
-    {
+    if (err<0) {
         printf("An error occured while using the portaudio stream\n" );
         printf("Error number: %d\n", err);
         printf("Error message: %s\n", Pa_GetErrorText(err));
@@ -113,12 +103,9 @@ cleanup:
 }
 
 // Callback function passed to portaudio to play audio file
-int playCallback( const void *inputBuffer, void *outputBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo* timeInfo,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData )
-{
+int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+                 const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags,
+                 void *userData) {
     // cast inputs to correct data type
     struct audioFileInfo *data = (struct audioFileInfo *) userData;
     float *out = (float*)outputBuffer;
@@ -134,21 +121,17 @@ int playCallback( const void *inputBuffer, void *outputBuffer,
     // copy data into buffer prior to output
     numberFramesRead = sf_readf_float(data->fileID, data->buffer, framesPerBuffer);
     
-    if (numberFramesRead>0) // If data to read
-    {
+    if (numberFramesRead>0) { // If data to read
         unsigned int i, n;
-        for ( i=0; i<numberFramesRead; i++ ) // iterature through frames
-        {
-            for ( n=0; n < data->channels; n++ )
-            {
+        for ( i=0; i<numberFramesRead; i++ ) { // iterature through frames
+            for ( n=0; n < data->channels; n++ ) {
                 // channels interleaved, so increment here accesses specific channel
                 *out++ = *(data->buffer)++; // this line write the buffer to the output
             }
         }
         return paContinue; // continue playing
     }
-    else
-    {
+    else {
         return paComplete; // finished playing
     }
 }

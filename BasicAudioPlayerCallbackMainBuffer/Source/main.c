@@ -15,8 +15,7 @@
 #define NUM_WRITES_PER_BUFFER (4)
 
 // struct type for storing audio file and other thread info
-struct threadData
-{
+struct threadData {
     struct audioFileInfo    audioFile;
     int                     threadSyncFlag;
     float                   *ringBufferData;
@@ -34,8 +33,7 @@ void bufferAudioFile(struct threadData* pData);
 unsigned int nextPowerOf2(unsigned int val);
 
 // MAIN
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Some initial declarations
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
@@ -49,8 +47,7 @@ int main(int argc, char *argv[])
     pData.audioFile.fileID = NULL;
     
     // program needs 1 argument: audio file name
-    if (argc != 2)
-    {
+    if (argc != 2) {
         // handle this error
         printf("Error: Bad command line. Syntax is:\n\n");
         printf("%s filename\n",argv[0]);
@@ -77,8 +74,7 @@ int main(int argc, char *argv[])
     numSamples = nextPowerOf2((unsigned)(pData.audioFile.sRate * 0.5 * pData.audioFile.channels));
     pData.ringBufferData = (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
     
-    if(pData.ringBufferData == NULL)
-    {
+    if(pData.ringBufferData == NULL) {
         // check memory was allocated
         err = NO_MEMORY;
         printf("Insufficient memory to play audio file.\n" );
@@ -87,21 +83,14 @@ int main(int argc, char *argv[])
     
     // initialise ring buffer
     err = PaUtil_InitializeRingBuffer(&pData.ringBuffer, sizeof(float), numSamples, pData.ringBufferData);
-    if (err != 0)
-    {
+    if (err != 0) {
         printf("Failed to initialize ring buffer.\n");
         goto cleanup;
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream,
-                        NULL, /* no input */
-                        &outputParameters,
-                        pData.audioFile.sRate,
-                        FRAMES_PER_BUFFER,
-                        paClipOff,
-                        playCallback,
-                        &pData);
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, pData.audioFile.sRate,
+                        FRAMES_PER_BUFFER, paClipOff, playCallback, &pData);
     if (err != 0) goto cleanup;
     
     // start playing
@@ -139,8 +128,7 @@ cleanup:
         PaUtil_FreeMemory(pData.ringBufferData);
     
     // all portaudio error codes are negative
-    if (err<0)
-    {
+    if (err<0) {
         printf("An error occured while using the portaudio stream\n" );
         printf("Error number: %d\n", err);
         printf("Error message: %s\n", Pa_GetErrorText(err));
@@ -149,12 +137,10 @@ cleanup:
 }
 
 // Callback function passed to portaudio to play audio file
-int playCallback( const void *inputBuffer, void *outputBuffer,
-                        unsigned long framesPerBuffer,
-                        const PaStreamCallbackTimeInfo* timeInfo,
-                        PaStreamCallbackFlags statusFlags,
-                        void *userData )
-{
+int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+                 const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags,
+                 void *userData) {
+    
     // cast inputs to appropriate types
     struct threadData *data = (struct threadData *) userData;
     float *out = (float*) outputBuffer;
@@ -174,27 +160,22 @@ int playCallback( const void *inputBuffer, void *outputBuffer,
     
     if (elementsToPlay-elementsToRead > 0)
         return paContinue; // make sure buffer is drained (esp at file end)
-    else
-    { // check if still reading
+    else { // check if still reading
         if (data->threadSyncFlag)
             return paComplete; // finished reading file
         else
             return paContinue; // still reading file
     }
-    
 }
 
 // This routine is run in a separate thread to read data from file into the ring buffer.
 // When the file has reached the end, a flag is set so that the PA callback can return paComplete.
-void bufferAudioFile(struct threadData* pData)
-{
-    while (1)
-    {
+void bufferAudioFile(struct threadData* pData) {
+    while (1) {
         // how many elements can be written
         ring_buffer_size_t numAvailableElements = PaUtil_GetRingBufferWriteAvailable(&pData->ringBuffer);
         
-        if (numAvailableElements >= pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER)
-        {
+        if (numAvailableElements >= pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER) {
             // there is space for writing
             
             void* ptr[2] = {0};
@@ -210,8 +191,7 @@ void bufferAudioFile(struct threadData* pData)
             
             // now get data from file and write to buffer
             ring_buffer_size_t itemsReadFromFile = 0;
-            for (int i = 0; i < 2 && ptr[i] != NULL; ++i)
-            {
+            for (int i = 0; i < 2 && ptr[i] != NULL; ++i) {
                 itemsReadFromFile +=
                 (ring_buffer_size_t) sf_read_float(pData->audioFile.fileID, ptr[i], sizes[i]);
             }
@@ -219,8 +199,7 @@ void bufferAudioFile(struct threadData* pData)
             // advance write index
             PaUtil_AdvanceRingBufferWriteIndex(&pData->ringBuffer, itemsReadFromFile);
             
-            if (itemsReadFromFile == 0)
-            {
+            if (itemsReadFromFile == 0) {
                 // No more data to read
                 pData->threadSyncFlag = 1;
                 break;
@@ -233,8 +212,7 @@ void bufferAudioFile(struct threadData* pData)
 }
 
 // next power of 2 (e.g. 127 -> 128)
-unsigned int nextPowerOf2(unsigned int val)
-{
+unsigned int nextPowerOf2(unsigned int val) {
     val--;
     val = (val >> 1) | val;
     val = (val >> 2) | val;
