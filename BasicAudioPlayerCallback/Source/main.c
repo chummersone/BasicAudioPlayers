@@ -16,7 +16,7 @@ PaStreamCallback playCallback;
 // MAIN
 int main(int argc, char *argv[]) {
     // Some initial declarations
-    unsigned int maxChannels;               // Max channels supported by audio device
+    unsigned int maxChannels;               // Max channels supported by device
     PaStreamParameters outputParameters;    // Audio device output parameters
     PaStream *stream = NULL;                // Audio stream info
     PaError err = 0;                        // Portaudio error number
@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
     // Allocate buffer memory
     // Depends on number of channels in audio file,
     // so cannot be done until now
-    audioFile.buffer = malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
+    audioFile.buffer =
+        malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
     if (audioFile.buffer==NULL) {
         // check memory was allocated
         err = NO_MEMORY;
@@ -63,8 +64,16 @@ int main(int argc, char *argv[]) {
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream, NULL, &outputParameters, audioFile.sRate,
-                        FRAMES_PER_BUFFER, paClipOff, playCallback, &audioFile);
+    err = Pa_OpenStream(
+        &stream,
+        NULL,
+        &outputParameters,
+        audioFile.sRate,
+        FRAMES_PER_BUFFER,
+        paClipOff,
+        playCallback,
+        &audioFile
+    );
     if (err != 0) goto cleanup;
     
     // start playing
@@ -103,9 +112,14 @@ cleanup:
 }
 
 // Callback function passed to portaudio to play audio file
-int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-                 const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags,
-                 void *userData) {
+int playCallback(
+    const void *inputBuffer,
+    void *outputBuffer,
+    unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags,
+    void *userData
+) {
     // cast inputs to correct data type
     struct audioFileInfo *data = (struct audioFileInfo *) userData;
     float *out = (float*)outputBuffer;
@@ -119,14 +133,15 @@ int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long fram
     (void) statusFlags;
     
     // copy data into buffer prior to output
-    numberFramesRead = sf_readf_float(data->fileID, data->buffer, framesPerBuffer);
+    numberFramesRead =
+        sf_readf_float(data->fileID, data->buffer, framesPerBuffer);
     
     if (numberFramesRead>0) { // If data to read
         unsigned int i, n;
         for ( i=0; i<numberFramesRead; i++ ) { // iterature through frames
             for ( n=0; n < data->channels; n++ ) {
-                // channels interleaved, so increment here accesses specific channel
-                *out++ = *(data->buffer)++; // this line write the buffer to the output
+                // channels interleaved, so increment accesses specific channel
+                *out++ = *(data->buffer)++; // write the buffer to the output
             }
         }
         return paContinue; // continue playing

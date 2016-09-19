@@ -35,12 +35,12 @@ unsigned int nextPowerOf2(unsigned int val);
 // MAIN
 int main(int argc, char *argv[]) {
     // Some initial declarations
-    unsigned int maxChannels;               // Max channels supported by audio device
-    PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream = NULL;                // Audio stream info
-    PaError err = 0;                        // Portaudio error number
-    struct threadData pData = {0};          // Pass info about the audio file
-    unsigned int numSamples;                // Number of samples in ring buffer
+    unsigned int maxChannels;           // Max channels supported by device
+    PaStreamParameters outputParameters;// Audio device output parameters
+    PaStream *stream = NULL;            // Audio stream info
+    PaError err = 0;                    // Portaudio error number
+    struct threadData pData = {0};      // Pass info about the audio file
+    unsigned int numSamples;            // Number of samples in ring buffer
     
     // intial values of audio file pointers
     pData.audioFile.buffer = NULL;
@@ -71,8 +71,10 @@ int main(int argc, char *argv[]) {
     // set output channels based on file
     outputParameters.channelCount = pData.audioFile.channels;
     
-    numSamples = nextPowerOf2((unsigned)(pData.audioFile.sRate * 0.5 * pData.audioFile.channels));
-    pData.ringBufferData = (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
+    numSamples =
+        nextPowerOf2((unsigned)(pData.audioFile.sRate * 0.5 * pData.audioFile.channels));
+    pData.ringBufferData =
+        (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
     
     if(pData.ringBufferData == NULL) {
         // check memory was allocated
@@ -82,15 +84,28 @@ int main(int argc, char *argv[]) {
     }
     
     // initialise ring buffer
-    err = PaUtil_InitializeRingBuffer(&pData.ringBuffer, sizeof(float), numSamples, pData.ringBufferData);
+    err = PaUtil_InitializeRingBuffer(
+        &pData.ringBuffer,
+        sizeof(float),
+        numSamples,
+        pData.ringBufferData
+    );
     if (err != 0) {
         printf("Failed to initialize ring buffer.\n");
         goto cleanup;
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream, NULL, &outputParameters, pData.audioFile.sRate,
-                        FRAMES_PER_BUFFER, paClipOff, playCallback, &pData);
+    err = Pa_OpenStream(
+        &stream,
+        NULL,
+        &outputParameters,
+        pData.audioFile.sRate,
+        FRAMES_PER_BUFFER,
+        paClipOff,
+        playCallback,
+        &pData
+    );
     if (err != 0) goto cleanup;
     
     // start playing
@@ -137,17 +152,24 @@ cleanup:
 }
 
 // Callback function passed to portaudio to play audio file
-int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-                 const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags,
-                 void *userData) {
+int playCallback(
+    const void *inputBuffer,
+    void *outputBuffer,
+    unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags,
+    void *userData
+) {
     
     // cast inputs to appropriate types
     struct threadData *data = (struct threadData *) userData;
     float *out = (float*) outputBuffer;
 
     // determine how many elements to pass to output buffer
-    ring_buffer_size_t elementsToPlay = PaUtil_GetRingBufferReadAvailable(&data->ringBuffer);
-    ring_buffer_size_t elementsToRead = min(elementsToPlay, (ring_buffer_size_t)(framesPerBuffer * data->audioFile.channels));
+    ring_buffer_size_t elementsToPlay =
+        PaUtil_GetRingBufferReadAvailable(&data->ringBuffer);
+    ring_buffer_size_t elementsToRead =
+        min(elementsToPlay, (ring_buffer_size_t)(framesPerBuffer * data->audioFile.channels));
     
     // prevent unused variable warnings
     (void) inputBuffer;
@@ -173,21 +195,24 @@ int playCallback(const void *inputBuffer, void *outputBuffer, unsigned long fram
 void bufferAudioFile(struct threadData* pData) {
     while (1) {
         // how many elements can be written
-        ring_buffer_size_t numAvailableElements = PaUtil_GetRingBufferWriteAvailable(&pData->ringBuffer);
+        ring_buffer_size_t numAvailableElements =
+            PaUtil_GetRingBufferWriteAvailable(&pData->ringBuffer);
         
-        if (numAvailableElements >= pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER) {
+        if ( numAvailableElements >= pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER) {
             // there is space for writing
             
             void* ptr[2] = {0};
             ring_buffer_size_t sizes[2] = {0};
             
             // Get region of ring buffer for writing
-            PaUtil_GetRingBufferWriteRegions(&pData->ringBuffer,
-                                             numAvailableElements,
-                                             ptr + 0,
-                                             sizes + 0,
-                                             ptr + 1,
-                                             sizes + 1);
+            PaUtil_GetRingBufferWriteRegions(
+                &pData->ringBuffer,
+                numAvailableElements,
+                ptr + 0,
+                sizes + 0,
+                ptr + 1,
+                sizes + 1
+            );
             
             // now get data from file and write to buffer
             ring_buffer_size_t itemsReadFromFile = 0;

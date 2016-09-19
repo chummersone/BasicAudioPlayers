@@ -22,8 +22,11 @@ const char* getDeviceIOname(PaIOdevice ioDevice) {
 }
 
 // This function opens an audio file
-int openAudioFile(const char fileName[], struct audioFileInfo *audioFile,
-                  int maxChannels) {
+int openAudioFile(
+    const char fileName[],
+    struct audioFileInfo *audioFile,
+    int maxChannels
+) {
     
     SF_INFO sfinfo; // audio file info returned by sndfile
     
@@ -64,7 +67,11 @@ void closeAudioFile(struct audioFileInfo *audioFile) {
 }
 
 // Set up output device
-void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsigned int *maxChannels) {
+void getStreamParameters(
+    PaStreamParameters *p,
+    const PaIOdevice ioDevice,
+    unsigned int *maxChannels
+) {
     
     // initial declarations
     PaDeviceIndex id;
@@ -78,24 +85,26 @@ void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsig
     for (int i = 0;i < Pa_GetDeviceCount(); i++) {
         info = Pa_GetDeviceInfo(i); // device info
         hostapi = Pa_GetHostApiInfo(info->hostApi); // API
-        if (i == Pa_GetDefaultInputDevice())
-            printf("%d: [%s] %s (default input)\n", i, hostapi->name, info->name);
-        else if (i == Pa_GetDefaultOutputDevice())
-            printf("%d: [%s] %s (default output)\n", i, hostapi->name, info->name);
-        else
+        if (i == Pa_GetDefaultInputDevice()) {
+            printf("%d: [%s] %s (default input)\n",
+                i, hostapi->name, info->name);
+        }
+        else if (i == Pa_GetDefaultOutputDevice()) {
+            printf("%d: [%s] %s (default output)\n",
+                i, hostapi->name, info->name);
+        }
+        else {
             printf("%d: [%s] %s\n", i, hostapi->name, info->name);
+        }
     }
     
     // Get the user to choose a device
-    while (1)
-    {
+    while (1) {
         printf("Type audio %s device number (press enter to use the default):\n",
                getDeviceIOname(ioDevice));
         read = getline(&selection, &len, stdin);
-        if (selection[0] == '\n')
-        { // user pressed <enter>, use default
-            switch (ioDevice)
-            {
+        if (selection[0] == '\n') { // user pressed <enter>, use default
+            switch (ioDevice) {
                 case INPUT_DEVICE:
                     id = Pa_GetDefaultInputDevice();
                     break;
@@ -119,7 +128,8 @@ void getStreamParameters(PaStreamParameters *p, const PaIOdevice ioDevice, unsig
     // get device info
     info = Pa_GetDeviceInfo(id);
     hostapi = Pa_GetHostApiInfo(info->hostApi);
-    printf("Opening audio %s device [%s] %s\n", getDeviceIOname(ioDevice), hostapi->name, info->name);
+    printf("Opening audio %s device [%s] %s\n", getDeviceIOname(ioDevice),
+        hostapi->name, info->name);
     
     // Set the stream parameters
     p->device = id;

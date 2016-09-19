@@ -48,14 +48,20 @@ struct audioFileInfo {
 const char* getDeviceIOname(PaIOdevice ioDevice);
 
 // This function opens an audio file
-int openAudioFile(const char fileName[],
-                    struct audioFileInfo *audioFile,
-                    int maxChannels);
+int openAudioFile(
+    const char fileName[],
+    struct audioFileInfo *audioFile,
+    int maxChannels
+);
 
 // This function closes an audio file
 void closeAudioFile(struct audioFileInfo *audioFile);
 
 // Set up audio device
-void getStreamParameters(PaStreamParameters *p, PaIOdevice ioDevice, unsigned int *maxChannels);
+void getStreamParameters(
+    PaStreamParameters *p,
+    PaIOdevice ioDevice,
+    unsigned int *maxChannels
+);
 
 #endif /* audioPlayerUtil_h */

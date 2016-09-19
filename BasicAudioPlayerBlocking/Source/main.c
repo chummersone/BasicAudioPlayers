@@ -13,12 +13,12 @@
 // MAIN
 int main(int argc, char *argv[]) {
     // Some initial declarations
-    unsigned int maxChannels;               // Max channels supported by audio device
-    PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream = NULL;                // Audio stream info
-    PaError err = 0;                        // Portaudio error number
-    struct audioFileInfo audioFile;         // Pass info about the audio file
-    sf_count_t numberFramesRead;            // Number of frames read from audio file
+    unsigned int maxChannels;           // Max channels supported by device
+    PaStreamParameters outputParameters;// Audio device output parameters
+    PaStream *stream = NULL;            // Audio stream info
+    PaError err = 0;                    // Portaudio error number
+    struct audioFileInfo audioFile;     // Pass info about the audio file
+    sf_count_t numberFramesRead;        // Number of frames read from audio file
     
     // intial values of audio file pointers
     audioFile.buffer = NULL;
@@ -52,7 +52,8 @@ int main(int argc, char *argv[]) {
     // Allocate buffer memory
     // Depends on number of channels in audio file,
     // so cannot be done until now
-    audioFile.buffer = malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
+    audioFile.buffer =
+        malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
     if (audioFile.buffer==NULL) {
         // check memory was allocated
         err = NO_MEMORY;
@@ -61,8 +62,16 @@ int main(int argc, char *argv[]) {
     }
     
     // open stream for outputting audio file via callback
-    err = Pa_OpenStream(&stream, NULL, &outputParameters, audioFile.sRate,
-                        FRAMES_PER_BUFFER, paClipOff, NULL, &audioFile);
+    err = Pa_OpenStream(
+        &stream,
+        NULL,
+        &outputParameters,
+        audioFile.sRate,
+        FRAMES_PER_BUFFER,
+        paClipOff,
+        NULL,
+        &audioFile
+    );
     if (err != 0) goto cleanup;
     
     // start playing
@@ -71,7 +80,8 @@ int main(int argc, char *argv[]) {
     
     // this is the blocking interface
     do { // read from file and write to buffer
-        numberFramesRead = sf_readf_float(audioFile.fileID, audioFile.buffer, FRAMES_PER_BUFFER);
+        numberFramesRead = sf_readf_float(audioFile.fileID,
+            audioFile.buffer, FRAMES_PER_BUFFER);
         // write buffer to stream
         err = Pa_WriteStream(stream, audioFile.buffer, numberFramesRead);
         if (err) goto cleanup;
