@@ -43,7 +43,8 @@ int main(int argc, char *argv[]) {
     unsigned int maxChannels;               // Max channels supported by audio device
     PaStreamParameters outputParameters;    // Audio device output parameters
     PaStream *stream = NULL;                // Audio stream info
-    PaError err = 0;                        // Portaudio error number
+    int err = 0;                            // Error number
+    int err_cat = 0;                        // Error category
     struct threadData pData = {0};          // Pass info about the audio file
     unsigned int numSamples;                // Number of samples in ring buffer
     
@@ -67,7 +68,10 @@ int main(int argc, char *argv[]) {
     // go to the cleanup statement below if
     // portaudio cannot be initialized
     err = Pa_Initialize();
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // Set up output device, get max output channels
     getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
@@ -75,7 +79,10 @@ int main(int argc, char *argv[]) {
     
     // Open audio file
     err = openAudioFile(argv[1],&pData.audioFile,maxChannels);
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_SNDFILE;
+        goto cleanup;
+    }
     
     // set output channels based on file
     outputParameters.channelCount = pData.audioFile.channels;
@@ -89,6 +96,7 @@ int main(int argc, char *argv[]) {
     if(pData.ringBufferData == NULL) {
         // check memory was allocated
         err = NO_MEMORY;
+        err_cat = ERR_ME;
         printf("Insufficient memory to play audio file.\n" );
         goto cleanup;
     }
@@ -102,6 +110,7 @@ int main(int argc, char *argv[]) {
     );
     if (err != 0) {
         printf("Failed to initialize ring buffer.\n");
+        err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }
     
@@ -116,15 +125,24 @@ int main(int argc, char *argv[]) {
         playCallback,
         &pData
     );
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // start thread that reads audio file
     err = startThread(&pData, threadFunctionReadAudioFile);
-    if( err != 0 ) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_ME;
+        goto cleanup;
+    }
     
     // start playing
     err = Pa_StartStream(stream);
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // wait for audio file to finish playing
     printf("Now playing...\n");
@@ -156,12 +174,9 @@ cleanup:
     if (pData.ringBufferData != NULL)
         PaUtil_FreeMemory(pData.ringBufferData);
     
-    // all portaudio error codes are negative
-    if (err<0) {
-        printf("An error occured while using the portaudio stream\n" );
-        printf("Error number: %d\n", err);
-        printf("Error message: %s\n", Pa_GetErrorText(err));
-    }
+    // print an error msg if applicable
+    printErrorMsg(err, err_cat, pData.audioFile.fileID);
+    
     return err;
 }
 

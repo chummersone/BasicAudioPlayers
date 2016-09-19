@@ -19,7 +19,8 @@ int main(int argc, char *argv[]) {
     unsigned int maxChannels;               // Max channels supported by device
     PaStreamParameters outputParameters;    // Audio device output parameters
     PaStream *stream = NULL;                // Audio stream info
-    PaError err = 0;                        // Portaudio error number
+    int err = 0;                            // Error number
+    int err_cat = 0;                        // Error category
     struct audioFileInfo audioFile;         // Pass info about the audio file
     
     // intial values of audio file pointers
@@ -38,7 +39,10 @@ int main(int argc, char *argv[]) {
     // go to the cleanup statement below if
     // portaudio cannot be initialized
     err = Pa_Initialize();
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // Set up output device, get max output channels
     getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
@@ -46,7 +50,10 @@ int main(int argc, char *argv[]) {
     
     // Open audio file
     err = openAudioFile(argv[1],&audioFile,maxChannels);
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_SNDFILE;
+        goto cleanup;
+    }
     
     // set output channels based on file
     outputParameters.channelCount = audioFile.channels;
@@ -59,6 +66,7 @@ int main(int argc, char *argv[]) {
     if (audioFile.buffer==NULL) {
         // check memory was allocated
         err = NO_MEMORY;
+        err_cat = ERR_ME;
         printf("Insufficient memory to play audio file.\n" );
         goto cleanup;
     }
@@ -74,11 +82,17 @@ int main(int argc, char *argv[]) {
         playCallback,
         &audioFile
     );
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // start playing
     err = Pa_StartStream(stream);
-    if (err != 0) goto cleanup;
+    if (err != 0) {
+        err_cat = ERR_PORTAUDIO;
+        goto cleanup;
+    }
     
     // wait for audio file to finish playing
     printf("Now playing...\n");
@@ -102,12 +116,9 @@ cleanup:
     // close audio file
     closeAudioFile(&audioFile);
     
-    // all portaudio error codes are negative
-    if (err<0) {
-        printf("An error occured while using the portaudio stream\n" );
-        printf("Error number: %d\n", err);
-        printf("Error message: %s\n", Pa_GetErrorText(err));
-    }
+    // print an error msg if applicable
+    printErrorMsg(err, err_cat, audioFile.fileID);
+    
     return err;
 }
 

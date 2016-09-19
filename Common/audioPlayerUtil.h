@@ -36,6 +36,14 @@ enum ERR_MSGS {
     NO_MEMORY
 };
 
+// make enumerated constants for different error categories
+enum ERR_CAT {
+    ERR_ME,
+    ERR_PORTAUDIO,
+    ERR_SNDFILE
+};
+
+
 // struct type for storing audio file info
 struct audioFileInfo {
     int         channels;   // number of audio channels
@@ -63,5 +71,8 @@ void getStreamParameters(
     PaIOdevice ioDevice,
     unsigned int *maxChannels
 );
+
+// print an error message
+void printErrorMsg(int err, int err_cat, SNDFILE *sndfile);
 
 #endif /* audioPlayerUtil_h */

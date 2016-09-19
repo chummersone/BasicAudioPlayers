@@ -139,3 +139,34 @@ void getStreamParameters(
     // set maximum number of output channels
     *maxChannels = info->maxOutputChannels;
 }
+
+// print an error message
+void printErrorMsg(int err, int err_cat, SNDFILE *sndfile) {
+
+    if (err != 0) {
+        switch (err_cat) {
+            case ERR_ME:
+                switch (err) {
+                    case BAD_COMMAND_LINE:
+                        puts("Bad command line syntax. The program requires one argument: the file name.\n");
+                    case ERROR_OPENING_FILE:
+                        puts("An unknown error occurred.\n");
+                    case INVALID_CHANNELS:
+                        puts("The audio file contains an invalid channel count (must be moono or stereo).\n");
+                    case NO_MEMORY:
+                        puts("Unable to allocate memory.\n");
+                    default:
+                        puts("An unknown error occurred.\n");
+                }
+                break;
+            case ERR_PORTAUDIO:
+                printf("Error. %s\n", Pa_GetErrorText(err));
+                break;
+            case ERR_SNDFILE:
+                printf("Error. %s\n", sf_strerror(sndfile));
+                break;
+            default:
+                puts("An unknown error occurred.");
+        }
+    }
+}
