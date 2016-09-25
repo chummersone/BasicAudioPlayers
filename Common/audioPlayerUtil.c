@@ -73,13 +73,12 @@ void getStreamParameters(
     unsigned int *maxChannels
 ) {
     
-    // initial declarations
-    PaDeviceIndex id;
-    const PaDeviceInfo *info;
-    const PaHostApiInfo *hostapi;
-    char* selection = NULL;
-    ssize_t read;
-    size_t len = 0;
+    PaDeviceIndex id;               // audio device id
+    const PaDeviceInfo *info;       // audio device info
+    const PaHostApiInfo *hostapi;   // api info
+    char* selection = NULL;         // user device selection
+    ssize_t read;                   // number of characters read from stdin
+    size_t len = 0;                 // size of allocated memory for stdin
     
     // Print out a list of the devices supporting input/output
     for (int i = 0;i < Pa_GetDeviceCount(); i++) {
