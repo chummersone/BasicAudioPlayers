@@ -30,10 +30,10 @@ typedef enum {
 // make enumerated constants for different errors
 enum ERR_MSGS {
     NO_ERROR,
-    BAD_COMMAND_LINE,
-    ERROR_OPENING_FILE,
-    INVALID_CHANNELS,
-    NO_MEMORY
+    ERR_BAD_COMMAND_LINE,
+    ERR_OPENING_FILE,
+    ERR_INVALID_CHANNELS,
+    ERR_NO_MEMORY
 };
 
 // make enumerated constants for different error categories

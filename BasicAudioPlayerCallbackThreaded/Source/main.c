@@ -59,9 +59,9 @@ int main(int argc, char *argv[]) {
     // program needs 1 argument: audio file name
     if (argc != 2) {
         // handle this error
-        printf("Error: Bad command line. Syntax is:\n\n");
-        printf("%s filename\n",argv[0]);
-        return BAD_COMMAND_LINE;
+        err_cat = ERR_ME;
+        err = ERR_BAD_COMMAND_LINE;
+        goto cleanup;
     }
     
     // initialise portaudio
@@ -95,9 +95,8 @@ int main(int argc, char *argv[]) {
     
     if(pData.ringBufferData == NULL) {
         // check memory was allocated
-        err = NO_MEMORY;
+        err = ERR_NO_MEMORY;
         err_cat = ERR_ME;
-        printf("Insufficient memory to play audio file.\n" );
         goto cleanup;
     }
     
@@ -109,7 +108,6 @@ int main(int argc, char *argv[]) {
         pData.ringBufferData
     );
     if (err != 0) {
-        printf("Failed to initialize ring buffer.\n");
         err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }

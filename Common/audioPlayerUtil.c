@@ -41,12 +41,12 @@ int openAudioFile(
     if (audioFile->fileID == NULL) {
         // file not opened
         printf("An error occurred opening audio file\n");
-        return ERROR_OPENING_FILE;
+        return ERR_OPENING_FILE;
     }
     else if (audioFile->channels > maxChannels) {
         // number of channels exceeds channels supported by device
         printf("The specified audio file has %d audio channels. The chosen device only supports up to %d channels.\n",audioFile->channels,maxChannels);
-        return INVALID_CHANNELS;
+        return ERR_INVALID_CHANNELS;
     }
     else {
         // everything was OK
@@ -146,13 +146,13 @@ void printErrorMsg(int err, int err_cat, SNDFILE *sndfile) {
         switch (err_cat) {
             case ERR_ME:
                 switch (err) {
-                    case BAD_COMMAND_LINE:
+                    case ERR_BAD_COMMAND_LINE:
                         puts("Bad command line syntax. The program requires one argument: the file name.\n");
-                    case ERROR_OPENING_FILE:
+                    case ERR_OPENING_FILE:
                         puts("An unknown error occurred.\n");
-                    case INVALID_CHANNELS:
+                    case ERR_INVALID_CHANNELS:
                         puts("The audio file contains an invalid channel count (must be moono or stereo).\n");
-                    case NO_MEMORY:
+                    case ERR_NO_MEMORY:
                         puts("Unable to allocate memory.\n");
                     default:
                         puts("An unknown error occurred.\n");

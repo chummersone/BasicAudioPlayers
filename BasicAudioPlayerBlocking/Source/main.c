@@ -28,9 +28,9 @@ int main(int argc, char *argv[]) {
     // program needs 1 argument: audio file name
     if (argc != 2) {
         // handle this error
-        printf("Error: Bad command line. Syntax is:\n\n");
-        printf("%s filename\n",argv[0]);
-        return BAD_COMMAND_LINE;
+        err_cat = ERR_ME;
+        err = ERR_BAD_COMMAND_LINE;
+        goto cleanup;
     }
     
     // initialise portaudio
@@ -63,9 +63,8 @@ int main(int argc, char *argv[]) {
         malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
     if (audioFile.buffer==NULL) {
         // check memory was allocated
-        err = NO_MEMORY;
+        err = ERR_NO_MEMORY;
         err_cat = ERR_ME;
-        printf("Insufficient memory to play audio file.\n" );
         goto cleanup;
     }
     
