@@ -11,6 +11,10 @@
 #include <portaudio.h>
 #include <sndfile.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif	/* __cplusplus */
+
 // How many audio frames will be pulled
 // from the audio file in one go
 #define FRAMES_PER_BUFFER (512)
@@ -74,5 +78,9 @@ void getStreamParameters(
 
 // print an error message
 void printErrorMsg(int err, int err_cat, SNDFILE *sndfile);
+
+#ifdef __cplusplus
+}		/* extern "C" */
+#endif	/* __cplusplus */
 
 #endif /* audioPlayerUtil_h */
