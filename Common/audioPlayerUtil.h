@@ -50,10 +50,11 @@ enum ERR_CAT {
 
 // struct type for storing audio file info
 struct audioFileInfo {
-    int         channels;   // number of audio channels
-    int         sRate;      // sample rate
-    SNDFILE*    fileID;     // id of audio file
-    float*      buffer;     // pointer to a buffer for storing audio data
+    unsigned int    channels;   // number of audio channels
+    sf_count_t      frames;     // number of frames
+    int             sRate;      // sample rate
+    SNDFILE*        fileID;     // id of audio file
+    float*          buffer;     // pointer to a buffer for storing audio data
 };
 
 // Return a name for an input or output device

@@ -35,6 +35,7 @@ int openAudioFile(
     
     // Pass parameters to audio file info
     audioFile->channels = sfinfo.channels;
+    audioFile->frames = sfinfo.frames;
     audioFile->sRate = sfinfo.samplerate;
     
     // Error checking
@@ -45,7 +46,8 @@ int openAudioFile(
     }
     else if (audioFile->channels > maxChannels) {
         // number of channels exceeds channels supported by device
-        printf("The specified audio file has %d audio channels. The chosen device only supports up to %d channels.\n",audioFile->channels,maxChannels);
+        printf("The specified audio file has %d audio channels. The chosen device only supports up to %d channels.\n",
+            audioFile->channels,maxChannels);
         return ERR_INVALID_CHANNELS;
     }
     else {
@@ -100,7 +102,7 @@ void getStreamParameters(
     // Get the user to choose a device
     while (1) {
         printf("Type audio %s device number (press enter to use the default):\n",
-               getDeviceIOname(ioDevice));
+            getDeviceIOname(ioDevice));
         read = getline(&selection, &len, stdin);
         if (selection[0] == '\n') { // user pressed <enter>, use default
             switch (ioDevice) {

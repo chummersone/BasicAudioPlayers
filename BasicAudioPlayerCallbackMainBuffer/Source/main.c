@@ -17,7 +17,9 @@
 // struct type for storing audio file and other thread info
 struct threadData {
     struct audioFileInfo    audioFile;
+    unsigned short          readComplete;
     int                     threadSyncFlag;
+    sf_count_t              frameCount;
     float                   *ringBufferData;
     PaUtilRingBuffer        ringBuffer;
     pthread_t               threadHandle;
@@ -34,18 +36,25 @@ unsigned int nextPowerOf2(unsigned int val);
 
 // MAIN
 int main(int argc, char *argv[]) {
+    
     // Some initial declarations
-    unsigned int maxChannels;           // Max channels supported by device
-    PaStreamParameters outputParameters;// Audio device output parameters
-    PaStream *stream = NULL;            // Audio stream info
-    int err = 0;                        // Error number
-    int err_cat = 0;                    // Error category
-    struct threadData pData = {0};      // Pass info about the audio file
-    unsigned int numSamples;            // Number of samples in ring buffer
+    unsigned int maxChannels;               // Max channels supported by device
+    PaStreamParameters outputParameters;    // Audio device output parameters
+    PaStream *stream = NULL;                // Audio stream info
+    int err = 0;                            // Error number
+    int err_cat = 0;                        // Error category
+    struct threadData pData = {0};          // Pass info about the audio file
+    unsigned int numSamples;                // Number of samples in ring buffer
     
     // intial values of audio file pointers
     pData.audioFile.buffer = NULL;
     pData.audioFile.fileID = NULL;
+    
+    // initial values of thread data
+    pData.threadSyncFlag = 0;
+    pData.readComplete = 0;
+    pData.frameCount = 0;
+    pData.ringBufferData = NULL;
     
     // program needs 1 argument: audio file name
     if (argc != 2) {
@@ -78,8 +87,10 @@ int main(int argc, char *argv[]) {
     // set output channels based on file
     outputParameters.channelCount = pData.audioFile.channels;
     
-    numSamples =
-        nextPowerOf2((unsigned)(pData.audioFile.sRate * 0.5 * pData.audioFile.channels));
+    // allocate ring buffer memory
+    numSamples = nextPowerOf2((unsigned)
+        (pData.audioFile.sRate * 0.5 * pData.audioFile.channels)
+    );
     pData.ringBufferData =
         (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
     
@@ -119,7 +130,6 @@ int main(int argc, char *argv[]) {
     }
     
     // start playing
-    pData.threadSyncFlag = 0;
     err = Pa_StartStream(stream);
     if (err != 0) {
         err_cat = ERR_PORTAUDIO;
@@ -178,8 +188,10 @@ int playCallback(
     // determine how many elements to pass to output buffer
     ring_buffer_size_t elementsToPlay =
         PaUtil_GetRingBufferReadAvailable(&data->ringBuffer);
-    ring_buffer_size_t elementsToRead =
-        min(elementsToPlay, (ring_buffer_size_t)(framesPerBuffer * data->audioFile.channels));
+    ring_buffer_size_t elementsToRead = min(
+        elementsToPlay,
+        (ring_buffer_size_t)(framesPerBuffer * data->audioFile.channels)
+    );
     
     // prevent unused variable warnings
     (void) inputBuffer;
@@ -190,25 +202,24 @@ int playCallback(
     // read data from buffer and put in output buffer
     PaUtil_ReadRingBuffer(&data->ringBuffer, out, elementsToRead);
     
-    if (elementsToPlay-elementsToRead > 0)
-        return paContinue; // make sure buffer is drained (esp at file end)
-    else { // check if still reading
-        if (data->threadSyncFlag)
-            return paComplete; // finished reading file
-        else
-            return paContinue; // still reading file
-    }
+    if (data->readComplete == 1 && elementsToPlay == 0)
+        return paComplete; // finished reading file
+    else
+        return paContinue; // still reading file
+        
 }
 
-// This routine is run in a separate thread to read data from file into the ring buffer.
-// When the file has reached the end, a flag is set so that the PA callback can return paComplete.
+// This routine is run in a separate thread to read data from file into the ring
+// buffer. When the file has reached the end, a flag is set so that the PA
+// callback can return paComplete.
 void bufferAudioFile(struct threadData* pData) {
     while (1) {
         // how many elements can be written
         ring_buffer_size_t numAvailableElements =
             PaUtil_GetRingBufferWriteAvailable(&pData->ringBuffer);
         
-        if ( numAvailableElements >= pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER) {
+        if (numAvailableElements >=
+            pData->ringBuffer.bufferSize / NUM_WRITES_PER_BUFFER) {
             // there is space for writing
             
             void* ptr[2] = {0};
@@ -227,19 +238,36 @@ void bufferAudioFile(struct threadData* pData) {
             // now get data from file and write to buffer
             ring_buffer_size_t itemsReadFromFile = 0;
             for (int i = 0; i < 2 && ptr[i] != NULL; ++i) {
-                itemsReadFromFile +=
-                (ring_buffer_size_t) sf_read_float(pData->audioFile.fileID, ptr[i], sizes[i]);
+                if (sizes[i] % pData->audioFile.channels) {
+                    // ensure items is integer number of channels
+                    sizes[i] -= sizes[i] % pData->audioFile.channels;
+                }
+                itemsReadFromFile += (ring_buffer_size_t)
+                    sf_read_float(pData->audioFile.fileID, ptr[i], sizes[i]);
             }
             
             // advance write index
-            PaUtil_AdvanceRingBufferWriteIndex(&pData->ringBuffer, itemsReadFromFile);
+            PaUtil_AdvanceRingBufferWriteIndex(
+                &pData->ringBuffer,
+                itemsReadFromFile
+            );
             
-            if (itemsReadFromFile == 0) {
-                // No more data to read
+            if (itemsReadFromFile > 0) {
+                // Check current position against file length; use that to
+                // determine whether the read is complete
+                pData->frameCount +=
+                    itemsReadFromFile/(pData->audioFile.channels);
+                if (pData->frameCount == pData->audioFile.frames) {
+                    pData->readComplete = 1;
+                }
+            }
+            else {
+                // No data to read
                 pData->threadSyncFlag = 1;
                 break;
             }
         }
+        
         // Sleep a little while...
         Pa_Sleep(20);
         // Then check if we need to fill the buffer
