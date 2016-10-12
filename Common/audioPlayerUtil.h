@@ -80,6 +80,9 @@ void getStreamParameters(
 // print an error message
 void printErrorMsg(int err, int err_cat, SNDFILE *sndfile);
 
+// next power of 2 (e.g. 127 -> 128)
+unsigned int nextPowerOf2(unsigned int val);
+
 #ifdef __cplusplus
 }		/* extern "C" */
 #endif	/* __cplusplus */

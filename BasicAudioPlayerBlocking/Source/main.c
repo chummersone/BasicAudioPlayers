@@ -12,18 +12,15 @@
 
 // MAIN
 int main(int argc, char *argv[]) {
-    // Some initial declarations
-    unsigned int maxChannels;           // Max channels supported by device
-    PaStreamParameters outputParameters;// Audio device output parameters
-    PaStream *stream = NULL;            // Audio stream info
-    int err = 0;                        // Error number
-    int err_cat = 0;                    // Error category
-    struct audioFileInfo audioFile;     // Pass info about the audio file
-    sf_count_t numberFramesRead;        // Number of frames read from audio file
     
-    // intial values of audio file pointers
-    audioFile.buffer = NULL;
-    audioFile.fileID = NULL;
+    int err = 0;        // Error number
+    int err_cat = 0;    // Error category
+    
+    // intial audio file info, set pointers to NULL
+    struct audioFileInfo audioFile = {
+        .buffer = NULL,
+        .fileID = NULL
+    };
     
     // program needs 1 argument: audio file name
     if (argc != 2) {
@@ -43,6 +40,8 @@ int main(int argc, char *argv[]) {
     }
     
     // Set up output device, get max output channels
+    unsigned int maxChannels; // Max channels supported by device
+    PaStreamParameters outputParameters;// Audio device output parameters
     getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
@@ -69,6 +68,7 @@ int main(int argc, char *argv[]) {
     }
     
     // open stream for outputting audio file via callback
+    PaStream *stream = NULL; // Audio stream info
     err = Pa_OpenStream(
         &stream,
         NULL,
@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
     }
     
     // this is the blocking interface
+    sf_count_t numberFramesRead; // Number of frames read from audio file
     do { // read from file and write to buffer
         numberFramesRead = sf_readf_float(audioFile.fileID,
             audioFile.buffer, FRAMES_PER_BUFFER);

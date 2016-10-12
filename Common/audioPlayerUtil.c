@@ -75,14 +75,9 @@ void getStreamParameters(
     unsigned int *maxChannels
 ) {
     
-    PaDeviceIndex id;               // audio device id
+    // Print out a list of the devices supporting input/output
     const PaDeviceInfo *info;       // audio device info
     const PaHostApiInfo *hostapi;   // api info
-    char* selection = NULL;         // user device selection
-    ssize_t read;                   // number of characters read from stdin
-    size_t len = 0;                 // size of allocated memory for stdin
-    
-    // Print out a list of the devices supporting input/output
     for (int i = 0;i < Pa_GetDeviceCount(); i++) {
         info = Pa_GetDeviceInfo(i); // device info
         hostapi = Pa_GetHostApiInfo(info->hostApi); // API
@@ -100,7 +95,11 @@ void getStreamParameters(
     }
     
     // Get the user to choose a device
+    PaDeviceIndex id; // audio device id
     while (1) {
+        char* selection = NULL; // user device selection
+        ssize_t read; // number of characters read from stdin
+        size_t len = 0; // size of allocated memory for stdin
         printf("Type audio %s device number (press enter to use the default):\n",
             getDeviceIOname(ioDevice));
         read = getline(&selection, &len, stdin);
@@ -170,4 +169,15 @@ void printErrorMsg(int err, int err_cat, SNDFILE *sndfile) {
                 puts("An unknown error occurred.");
         }
     }
+}
+
+// next power of 2 (e.g. 127 -> 128)
+unsigned int nextPowerOf2(unsigned int val) {
+    val--;
+    val = (val >> 1) | val;
+    val = (val >> 2) | val;
+    val = (val >> 4) | val;
+    val = (val >> 8) | val;
+    val = (val >> 16) | val;
+    return ++val;
 }

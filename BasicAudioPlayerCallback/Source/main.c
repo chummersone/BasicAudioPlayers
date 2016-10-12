@@ -15,17 +15,15 @@ PaStreamCallback playCallback;
 
 // MAIN
 int main(int argc, char *argv[]) {
-    // Some initial declarations
-    unsigned int maxChannels;               // Max channels supported by device
-    PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream = NULL;                // Audio stream info
-    int err = 0;                            // Error number
-    int err_cat = 0;                        // Error category
-    struct audioFileInfo audioFile;         // Pass info about the audio file
     
-    // intial values of audio file pointers
-    audioFile.buffer = NULL;
-    audioFile.fileID = NULL;
+    int err = 0;        // Error number
+    int err_cat = 0;    // Error category
+    
+    // intial audio file info, set pointers to NULL
+    struct audioFileInfo audioFile = {
+        .buffer = NULL,
+        .fileID = NULL
+    };
     
     // program needs 1 argument: audio file name
     if (argc != 2) {
@@ -45,6 +43,8 @@ int main(int argc, char *argv[]) {
     }
     
     // Set up output device, get max output channels
+    unsigned int maxChannels;               // Max channels supported by device
+    PaStreamParameters outputParameters;    // Audio device output parameters
     getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
@@ -71,6 +71,7 @@ int main(int argc, char *argv[]) {
     }
     
     // open stream for outputting audio file via callback
+    PaStream *stream = NULL;                // Audio stream info
     err = Pa_OpenStream(
         &stream,
         NULL,
@@ -134,16 +135,13 @@ int playCallback(
     struct audioFileInfo *data = (struct audioFileInfo *) userData;
     float *out = (float*)outputBuffer;
     
-    // declare other variables
-    sf_count_t numberFramesRead; // frames read from file
-    
     // avoid unused variable warnings
     (void) inputBuffer;
     (void) timeInfo;
     (void) statusFlags;
     
     // copy data into buffer prior to output
-    numberFramesRead =
+    sf_count_t numberFramesRead =
         sf_readf_float(data->fileID, data->buffer, framesPerBuffer);
     
     if (numberFramesRead>0) { // If data to read

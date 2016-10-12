@@ -41,24 +41,18 @@ unsigned int nextPowerOf2(unsigned int val);
 // MAIN
 int main(int argc, char *argv[]) {
     
-    // Some initial declarations
-    unsigned int maxChannels;               // Max channels supported by device
-    PaStreamParameters outputParameters;    // Audio device output parameters
-    PaStream *stream = NULL;                // Audio stream info
     int err = 0;                            // Error number
     int err_cat = 0;                        // Error category
-    struct threadData pData = {0};          // Pass info about the audio file
-    unsigned int numSamples;                // Number of samples in ring buffer
     
-    // intial values of audio file pointers
-    pData.audioFile.buffer = NULL;
-    pData.audioFile.fileID = NULL;
-    
-    // initial values of thread data
-    pData.threadSyncFlag = 1;
-    pData.readComplete = 0;
-    pData.frameCount = 0;
-    pData.ringBufferData = NULL;
+    // info about the audio file and thread
+    struct threadData pData = {
+        .audioFile.buffer = NULL,
+        .audioFile.fileID = NULL,
+        .threadSyncFlag = 1,
+        .readComplete = 0,
+        .frameCount = 0,
+        .ringBufferData = NULL
+    };
     
     // program needs 1 argument: audio file name
     if (argc != 2) {
@@ -78,6 +72,8 @@ int main(int argc, char *argv[]) {
     }
     
     // Set up output device, get max output channels
+    unsigned int maxChannels; // Max channels supported by device
+    PaStreamParameters outputParameters; // Audio device output parameters
     getStreamParameters(&outputParameters, OUTPUT_DEVICE, &maxChannels);
     outputParameters.sampleFormat = paFloat32; // specify output format
     
@@ -92,9 +88,9 @@ int main(int argc, char *argv[]) {
     outputParameters.channelCount = pData.audioFile.channels;
     
     // allocate ring buffer memory
-    numSamples = nextPowerOf2((unsigned)
+    unsigned int numSamples = nextPowerOf2((unsigned)
         (pData.audioFile.sRate * 0.5 * pData.audioFile.channels)
-    );
+    ); // Number of samples in ring buffer
     pData.ringBufferData =
         (float *) PaUtil_AllocateMemory(sizeof(float)*numSamples);
     
@@ -118,6 +114,7 @@ int main(int argc, char *argv[]) {
     }
     
     // open stream for outputting audio file via callback
+    PaStream *stream = NULL; // Audio stream info
     err = Pa_OpenStream(
         &stream,
         NULL,
@@ -331,15 +328,4 @@ void* threadFunctionReadAudioFile(void* data) {
     }
     
     return NULL; // nothing to return
-}
-
-// next power of 2 (e.g. 127 -> 128)
-unsigned int nextPowerOf2(unsigned int val) {
-    val--;
-    val = (val >> 1) | val;
-    val = (val >> 2) | val;
-    val = (val >> 4) | val;
-    val = (val >> 8) | val;
-    val = (val >> 16) | val;
-    return ++val;
 }
