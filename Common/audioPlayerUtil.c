@@ -143,7 +143,7 @@ void getStreamParameters(
 // print an error message
 void printErrorMsg(int err, int err_cat, SNDFILE *sndfile) {
 
-    if (err != 0) {
+    if (err) {
         switch (err_cat) {
             case ERR_ME:
                 switch (err) {

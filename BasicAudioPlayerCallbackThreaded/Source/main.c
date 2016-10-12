@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     // go to the cleanup statement below if
     // portaudio cannot be initialized
     err = Pa_Initialize();
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     
     // Open audio file
     err = openAudioFile(argv[1],&pData.audioFile,maxChannels);
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_SNDFILE;
         goto cleanup;
     }
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
         numSamples,
         pData.ringBufferData
     );
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }
@@ -125,21 +125,21 @@ int main(int argc, char *argv[]) {
         playCallback,
         &pData
     );
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }
     
     // start thread that reads audio file
     err = startThread(&pData, threadFunctionReadAudioFile);
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_ME;
         goto cleanup;
     }
     
     // start playing
     err = Pa_StartStream(stream);
-    if (err != 0) {
+    if (err) {
         err_cat = ERR_PORTAUDIO;
         goto cleanup;
     }
