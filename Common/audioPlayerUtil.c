@@ -141,34 +141,33 @@ void getStreamParameters(
 }
 
 // print an error message
-void printErrorMsg(int err, int err_cat, SNDFILE *sndfile) {
+void printErrorMsg(int err, PaError err_pa, SNDFILE *sndfile) {
 
     if (err) {
-        switch (err_cat) {
-            case ERR_ME:
-                switch (err) {
-                    case ERR_BAD_COMMAND_LINE:
-                        puts("Bad command line syntax. The program requires one argument: the file name.\n");
-                    case ERR_OPENING_FILE:
-                        puts("An unknown error occurred.\n");
-                    case ERR_INVALID_CHANNELS:
-                        puts("The audio file contains an invalid channel count (must be moono or stereo).\n");
-                    case ERR_NO_MEMORY:
-                        puts("Unable to allocate memory.\n");
-                    default:
-                        puts("An unknown error occurred.\n");
-                }
-                break;
+        switch (err) {
+            case ERR_BAD_COMMAND_LINE:
+                puts("Bad command line syntax. The program requires one argument: the file name.");
+            case ERR_OPENING_FILE:
+                puts("Error opening audio file.");
+            case ERR_INVALID_CHANNELS:
+                puts("The audio file contains an invalid channel count (must be moono or stereo).");
+            case ERR_BAD_ALLOC:
+                puts("Unable to allocate memory.");
             case ERR_PORTAUDIO:
-                printf("Error. %s\n", Pa_GetErrorText(err));
-                break;
-            case ERR_SNDFILE:
-                printf("Error. %s\n", sf_strerror(sndfile));
-                break;
+                puts("An error occurred with PortAudio.");
             default:
                 puts("An unknown error occurred.");
         }
     }
+    
+    if (err_pa) {
+        printf("%s\n", Pa_GetErrorText(err));
+    }
+    
+    if (sf_error(sndfile)) {
+        printf("%s\n", sf_strerror(sndfile));
+    }
+    
 }
 
 // next power of 2 (e.g. 127 -> 128)

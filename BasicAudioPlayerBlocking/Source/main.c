@@ -13,8 +13,8 @@
 // MAIN
 int main(int argc, char *argv[]) {
     
-    int err = 0;        // Error number
-    int err_cat = 0;    // Error category
+    int err = 0;
+    PaError err_pa = paNoError;
     
     // intial audio file info, set pointers to NULL
     struct audioFileInfo audioFile = {
@@ -25,7 +25,6 @@ int main(int argc, char *argv[]) {
     // program needs 1 argument: audio file name
     if (argc != 2) {
         // handle this error
-        err_cat = ERR_ME;
         err = ERR_BAD_COMMAND_LINE;
         goto cleanup;
     }
@@ -33,9 +32,9 @@ int main(int argc, char *argv[]) {
     // initialise portaudio
     // go to the cleanup statement below if
     // portaudio cannot be initialized
-    err = Pa_Initialize();
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    err_pa = Pa_Initialize();
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
@@ -48,7 +47,6 @@ int main(int argc, char *argv[]) {
     // Open audio file
     err = openAudioFile(argv[1],&audioFile,maxChannels);
     if (err) {
-        err_cat = ERR_SNDFILE;
         goto cleanup;
     }
     
@@ -62,8 +60,7 @@ int main(int argc, char *argv[]) {
         malloc(sizeof(float)*FRAMES_PER_BUFFER*(audioFile.channels));
     if (audioFile.buffer==NULL) {
         // check memory was allocated
-        err = ERR_NO_MEMORY;
-        err_cat = ERR_ME;
+        err = ERR_BAD_ALLOC;
         goto cleanup;
     }
     
@@ -79,15 +76,15 @@ int main(int argc, char *argv[]) {
         NULL,
         &audioFile
     );
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
     // start playing
-    err = Pa_StartStream(stream);
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    err_pa = Pa_StartStream(stream);
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
@@ -97,9 +94,9 @@ int main(int argc, char *argv[]) {
         numberFramesRead = sf_readf_float(audioFile.fileID,
             audioFile.buffer, FRAMES_PER_BUFFER);
         // write buffer to stream
-        err = Pa_WriteStream(stream, audioFile.buffer, numberFramesRead);
-        if (err) {
-            err_cat = ERR_PORTAUDIO;
+        err_pa = Pa_WriteStream(stream, audioFile.buffer, numberFramesRead);
+        if (err_pa) {
+            err = ERR_PORTAUDIO;
             goto cleanup;
         }
     } while (numberFramesRead > 0);
@@ -122,7 +119,7 @@ cleanup:
     closeAudioFile(&audioFile);
     
     // print an error msg if applicable
-    printErrorMsg(err, err_cat, audioFile.fileID);
+    printErrorMsg(err, err_pa, audioFile.fileID);
     
     return err;
 }

@@ -37,8 +37,8 @@ unsigned int nextPowerOf2(unsigned int val);
 // MAIN
 int main(int argc, char *argv[]) {
     
-    int err = 0;        // Error number
-    int err_cat = 0;    // Error category
+    int err = 0;
+    PaError err_pa = paNoError;
     
     // info about the audio file and thread
     struct threadData pData = {
@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
     // program needs 1 argument: audio file name
     if (argc != 2) {
         // handle this error
-        err_cat = ERR_ME;
         err = ERR_BAD_COMMAND_LINE;
         goto cleanup;
     }
@@ -61,9 +60,9 @@ int main(int argc, char *argv[]) {
     // initialise portaudio
     // go to the cleanup statement below if
     // portaudio cannot be initialized
-    err = Pa_Initialize();
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    err_pa = Pa_Initialize();
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
@@ -76,7 +75,6 @@ int main(int argc, char *argv[]) {
     // Open audio file
     err = openAudioFile(argv[1],&pData.audioFile,maxChannels);
     if (err) {
-        err_cat = ERR_SNDFILE;
         goto cleanup;
     }
     
@@ -92,26 +90,25 @@ int main(int argc, char *argv[]) {
     
     if(pData.ringBufferData == NULL) {
         // check memory was allocated
-        err = ERR_NO_MEMORY;
-        err_cat = ERR_ME;
+        err = ERR_BAD_ALLOC;
         goto cleanup;
     }
     
     // initialise ring buffer
-    err = PaUtil_InitializeRingBuffer(
+    err_pa = PaUtil_InitializeRingBuffer(
         &pData.ringBuffer,
         sizeof(float),
         numSamples,
         pData.ringBufferData
     );
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
     // open stream for outputting audio file via callback
     PaStream *stream = NULL; // Audio stream info
-    err = Pa_OpenStream(
+    err_pa = Pa_OpenStream(
         &stream,
         NULL,
         &outputParameters,
@@ -121,15 +118,15 @@ int main(int argc, char *argv[]) {
         playCallback,
         &pData
     );
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
     // start playing
-    err = Pa_StartStream(stream);
-    if (err) {
-        err_cat = ERR_PORTAUDIO;
+    err_pa = Pa_StartStream(stream);
+    if (err_pa) {
+        err = ERR_PORTAUDIO;
         goto cleanup;
     }
     
@@ -163,7 +160,7 @@ cleanup:
         PaUtil_FreeMemory(pData.ringBufferData);
     
     // print an error msg if applicable
-    printErrorMsg(err, err_cat, pData.audioFile.fileID);
+    printErrorMsg(err, err_pa, pData.audioFile.fileID);
     
     return err;
 }

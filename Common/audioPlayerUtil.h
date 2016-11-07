@@ -37,14 +37,8 @@ enum ERR_MSGS {
     ERR_BAD_COMMAND_LINE,
     ERR_OPENING_FILE,
     ERR_INVALID_CHANNELS,
-    ERR_NO_MEMORY
-};
-
-// make enumerated constants for different error categories
-enum ERR_CAT {
-    ERR_ME,
-    ERR_PORTAUDIO,
-    ERR_SNDFILE
+    ERR_BAD_ALLOC,
+    ERR_PORTAUDIO
 };
 
 
@@ -78,7 +72,7 @@ void getStreamParameters(
 );
 
 // print an error message
-void printErrorMsg(int err, int err_cat, SNDFILE *sndfile);
+void printErrorMsg(int err, PaError err_pa, SNDFILE *sndfile);
 
 // next power of 2 (e.g. 127 -> 128)
 unsigned int nextPowerOf2(unsigned int val);
