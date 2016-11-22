@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     
     // open stream for outputting audio file via callback
     PaStream *stream = NULL; // Audio stream info
-    err = Pa_OpenStream(
+    err_pa = Pa_OpenStream(
         &stream,
         NULL,
         &outputParameters,
