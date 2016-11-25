@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     
     // wait for audio file to finish playing
     printf("Now playing...\n");
-    while (Pa_IsStreamActive(stream) == 1)
+    while (Pa_IsStreamActive(stream))
         Pa_Sleep(100);
     
     // Finished playing
@@ -207,7 +207,7 @@ int playCallback(
     // read data from buffer and put in output buffer
     PaUtil_ReadRingBuffer(&data->ringBuffer, out, elementsToRead);
     
-    if (data->readComplete == 1 && elementsToPlay == 0)
+    if (data->readComplete && elementsToPlay == 0)
         return paComplete; // finished reading file
     else
         return paContinue; // still reading file

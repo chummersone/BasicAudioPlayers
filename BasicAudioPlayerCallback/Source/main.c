@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     
     // wait for audio file to finish playing
     printf("Now playing...\n");
-    while (Pa_IsStreamActive(stream) == 1)
+    while (Pa_IsStreamActive(stream))
         Pa_Sleep(100);
     
     // Finished playing
